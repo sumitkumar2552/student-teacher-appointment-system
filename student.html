@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <h1>Student Dashboard</h1>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <div class="container">
+
+    <!-- TEACHER LIST -->
+    <div class="card">
+      <h3>Available Teachers</h3>
+      <ul id="teacherList"></ul>
+    </div>
+
+    <!-- BOOK APPOINTMENT -->
+    <div class="card">
+      <h3>Book Appointment</h3>
+      <input id="purpose" placeholder="Purpose">
+      <input id="time" placeholder="Preferred Time">
+      <button id="bookBtn" class="primary">Book Appointment</button>
+      <p id="msg"></p>
+    </div>
+
+    <!-- APPOINTMENT HISTORY -->
+    <div class="card">
+      <h3>Your Appointments</h3>
+      <ul id="myAppointments"></ul>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module">
+  import {
+    getTeachers,
+    bookAppointment,
+    getStudentAppointments
+  } from "./js/student.js";
+
+  import { auth } from "./js/firebase.js";
+  import {
+    signOut,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  let currentStudent = null;
+  let selectedTeacherObj = null;
+
+  /* AUTH STATE LISTENER */
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentStudent = user;
+      loadTeachers();
+      loadMyAppointments();
+    } else {
+      window.location.href = "index.html";
+    }
+  });
+
+  /* LOAD TEACHERS */
+  async function loadTeachers() {
+    const teachers = await getTeachers();
+    const list = document.getElementById("teacherList");
+    list.innerHTML = "";
+
+    teachers.forEach(t => {
+      const li = document.createElement("li");
+      li.className = "list-item";
+      li.innerHTML = `
+        <strong>${t.name}</strong><br>
+        Dept: ${t.dept}<br>
+        Subject: ${t.subject}<br>
+        <button class="secondary">Select</button>
+      `;
+
+      li.querySelector("button").onclick = () => {
+        selectedTeacherObj = t;
+        msg.innerText = `Selected teacher: ${t.name}`;
+      };
+
+      list.appendChild(li);
+    });
+  }
+
+  /* BOOK APPOINTMENT */
+  document.getElementById("bookBtn").onclick = async () => {
+    if (!selectedTeacherObj) {
+      msg.innerText = "Please select a teacher";
+      return;
+    }
+
+    await bookAppointment(
+      currentStudent,
+      selectedTeacherObj,
+      purpose.value,
+      time.value
+    );
+
+    msg.innerText = "Appointment booked (Pending approval)";
+    purpose.value = "";
+    time.value = "";
+
+    loadMyAppointments();
+  };
+
+  /* LOAD STUDENT APPOINTMENTS */
+  async function loadMyAppointments() {
+    const list = document.getElementById("myAppointments");
+    list.innerHTML = "";
+
+    const data = await getStudentAppointments(currentStudent.uid);
+
+    if (data.length === 0) {
+      list.innerHTML = "<li>No appointments yet</li>";
+      return;
+    }
+
+    data.forEach(a => {
+      const li = document.createElement("li");
+      li.className = "list-item";
+      li.innerHTML = `
+        <strong>${a.teacherName}</strong><br>
+        Purpose: ${a.purpose}<br>
+        Time: ${a.time}<br>
+        Status:
+        <span class="status ${a.status}">
+          ${a.status}
+        </span>
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  /* LOGOUT */
+  document.getElementById("logoutBtn").onclick = async () => {
+    await signOut(auth);
+    window.location.href = "index.html";
+  };
+</script>
+
+
+</body>
+</html>

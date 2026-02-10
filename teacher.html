@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teacher Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <h1>Teacher Dashboard</h1>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <div class="container">
+
+    <!-- APPOINTMENTS CARD -->
+    <div class="card">
+      <h3>Your Appointments</h3>
+      <ul id="appointmentList"></ul>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module">
+  import {
+    getTeacherAppointments,
+    updateAppointmentStatus
+  } from "./js/teacher.js";
+
+  import { auth } from "./js/firebase.js";
+  import { signOut, onAuthStateChanged } from
+    "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  let currentTeacherUid = null;
+
+  /* AUTH STATE LISTENER */
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentTeacherUid = user.uid;
+      loadAppointments();
+    } else {
+      // not logged in
+      window.location.href = "index.html";
+    }
+  });
+
+  /* LOAD APPOINTMENTS */
+  async function loadAppointments() {
+    const list = document.getElementById("appointmentList");
+    list.innerHTML = "";
+
+    const appointments = await getTeacherAppointments(currentTeacherUid);
+
+    if (appointments.length === 0) {
+      list.innerHTML = "<li>No appointments yet</li>";
+      return;
+    }
+
+    appointments.forEach(a => {
+      const li = document.createElement("li");
+      li.className = "list-item";
+      li.innerHTML = `
+        <strong>Student:</strong> ${a.studentEmail}<br>
+        <strong>Purpose:</strong> ${a.purpose}<br>
+        <strong>Time:</strong> ${a.time}<br>
+        Status:
+        <span class="status ${a.status}">${a.status}</span>
+
+        <div class="actions">
+          <button class="primary approve">Approve</button>
+          <button class="secondary reject">Reject</button>
+        </div>
+      `;
+
+      li.querySelector(".approve").onclick = async () => {
+        await updateAppointmentStatus(a.id, "approved");
+        loadAppointments();
+      };
+
+      li.querySelector(".reject").onclick = async () => {
+        await updateAppointmentStatus(a.id, "rejected");
+        loadAppointments();
+      };
+
+      list.appendChild(li);
+    });
+  }
+
+  /* LOGOUT */
+  document.getElementById("logoutBtn").onclick = async () => {
+    await signOut(auth);
+    window.location.href = "index.html";
+  };
+</script>
+
+
+</body>
+</html>

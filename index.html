@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login | Appointment System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <h1>Appointment System</h1>
+  </div>
+
+  <!-- LOGIN CARD -->
+  <div class="auth-box">
+    <h2>Login</h2>
+
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button id="loginBtn" class="primary">Login</button>
+
+    <p style="margin-top:15px">
+      New user?
+      <a href="register.html">Register here</a>
+    </p>
+  </div>
+
+  <!-- LOGIN SCRIPT -->
+  <script type="module">
+    import { login } from "./js/auth.js";
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      try {
+        const cred = await login(email.value, password.value);
+        const userEmail = cred.user.email;
+
+        if (userEmail === "admin@gmail.com") {
+          window.location.href = "admin.html";
+        } else if (userEmail.endsWith("@teacher.com")) {
+          window.location.href = "teacher.html";
+        } else {
+          window.location.href = "student.html";
+        }
+
+      } catch (err) {
+        if (err.code === "auth/invalid-credential") {
+          alert("Invalid email or password");
+        } else {
+          alert(err.message);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

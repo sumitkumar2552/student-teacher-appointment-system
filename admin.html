@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <h1>Admin Dashboard</h1>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <div class="container">
+
+    <!-- ADD TEACHER CARD -->
+    <div class="card">
+      <h3>Add Teacher</h3>
+
+      <input id="tname" placeholder="Teacher Name">
+      <input id="tdept" placeholder="Department">
+      <input id="tsubject" placeholder="Subject">
+      <input id="temail" placeholder="Teacher Email">
+      <input id="tuid" placeholder="Teacher UID">
+
+      <button id="addTeacherBtn" class="primary">Add Teacher</button>
+      <p id="msg"></p>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module">
+    import { addTeacher } from "./js/admin.js";
+    import { signOut } from
+      "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { auth } from "./js/firebase.js";
+
+    /* ADD TEACHER */
+    document.getElementById("addTeacherBtn").addEventListener("click", async () => {
+      try {
+        await addTeacher(
+          tname.value,
+          tdept.value,
+          tsubject.value,
+          temail.value,
+          tuid.value
+        );
+
+        msg.innerText = "Teacher added successfully";
+
+        // optional: clear form
+        tname.value = "";
+        tdept.value = "";
+        tsubject.value = "";
+        temail.value = "";
+        tuid.value = "";
+
+      } catch (err) {
+        msg.innerText = err.message;
+      }
+    });
+
+    /* LOGOUT */
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "index.html";
+    });
+  </script>
+
+</body>
+</html>
