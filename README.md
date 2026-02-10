@@ -5,7 +5,7 @@ A full-stack web application that allows students to book appointments with teac
 ---
 
 ## 🚀 Live Demo
-👉 https://YOUR_PROJECT_NAME.vercel.app
+👉 https://student-teacher-appointment-system.vercel.app/
 
 ---
 
@@ -96,6 +96,6 @@ Role detection is handled using email-based logic:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/YOUR_USERNAME/student-teacher-appointment-system.git
+git clone https://github.com/sumitkumar2552/student-teacher-appointment-system.git
 
 
